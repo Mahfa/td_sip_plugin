@@ -5,10 +5,11 @@ PODS:
   - linphone-sdk/basic-frameworks (4.3.1)
   - mz_back_plugin (0.0.1):
     - Flutter
-  - permission_handler_apple (9.0.4):
+  - permission_handler_apple (9.1.1):
     - Flutter
   - td_sip_plugin (0.0.1):
     - Flutter
+    - linphone-sdk
     - TDSip (= 1.0.5)
   - TDSip (1.0.5):
     - linphone-sdk (= 4.3.1)
@@ -39,10 +40,10 @@ SPEC CHECKSUMS:
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
   linphone-sdk: 044f9b75a34b1a4cc31fc7c73933f07eb102f8a7
   mz_back_plugin: 96b4b5d4286e3cc276d2ac1f3e1771a36a84bf5c
-  permission_handler_apple: 44366e37eaf29454a1e7b1b7d736c2cceaeb17ce
-  td_sip_plugin: be22d744a33a574718c4a25a73cba3c4de57ba76
+  permission_handler_apple: e76247795d700c14ea09e3a2d8855d41ee80a2e6
+  td_sip_plugin: 44d68b9157392f39449af054d624fcf52193ad5b
   TDSip: ae36154021b4a4e886768107fe9190a32e8be6a8
 
 PODFILE CHECKSUM: 24450134fb7311de0e322f7eb8c6478ad9751be9
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.12.1

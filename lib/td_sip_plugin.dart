@@ -118,6 +118,7 @@ class TdSipPlugin {
     String turnServer = "",
     String turnUser = "",
     String turnPassword = "",
+    String proxy = "",
   }) {
     _methodChannel.invokeMethod("login", {
       "sipID": sipID,
@@ -130,6 +131,7 @@ class TdSipPlugin {
       "turnServer": turnServer,
       "turnUser": turnUser,
       "turnPassword": turnPassword,
+      "proxy": proxy,
     });
   }
 

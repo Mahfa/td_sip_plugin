@@ -155,7 +155,7 @@ public class SipTruMiniManager extends Service implements CoreListener {
     /**
      * 注册sip账号
      */
-    public void registerSip(String sipID, String sipPassword, String sipDomain, String sipPort, String sipTransport, boolean iceEnable, boolean turnEnable, String turnServer, String turnUser, String turnPassword) {
+    public void registerSip(String sipID, String sipPassword, String sipDomain, String sipPort, String sipTransport, boolean iceEnable, boolean turnEnable, String turnServer, String turnUser, String turnPassword, String backProxy) {
         if (mSiptruCore == null) {
             return;
         }
@@ -190,7 +190,7 @@ public class SipTruMiniManager extends Service implements CoreListener {
                     .setOutboundProxyEnabled(true);
         }
         try {
-            builder.saveNewAccount(iceEnable);
+            builder.saveNewAccount(iceEnable, backProxy);
         } catch (CoreException e) {
             e.printStackTrace();
         }
@@ -645,7 +645,7 @@ public class SipTruMiniManager extends Service implements CoreListener {
         }
 
 
-        public void saveNewAccount(boolean isOpenIce) throws CoreException {
+        public void saveNewAccount(boolean isOpenIce, String backProxy) throws CoreException {
             if (tempUsername == null || tempUsername.length() < 1 || tempDomain == null || tempDomain.length() < 1) {
                 return;
             }
@@ -661,7 +661,7 @@ public class SipTruMiniManager extends Service implements CoreListener {
                     proxy = tempProxy;
                 }
             }
-            Address proxyAddr = Factory.instance().createAddress(proxy);
+            Address proxyAddr = Factory.instance().createAddress(backProxy);
             Address identityAddr = Factory.instance().createAddress(identity);
             if (proxyAddr == null || identityAddr == null) {
                 throw new CoreException("Proxy or Identity address is null !");

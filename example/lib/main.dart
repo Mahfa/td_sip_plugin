@@ -126,14 +126,14 @@ class _HomePageState extends State<HomePage>
       // 2107556514130605
       // 100000004
       // 110000004
-      TdSipPlugin.call("2107556514130605");
+      TdSipPlugin.call("10001");
     } else if (status.isPermanentlyDenied) {
       ///用户点击了 拒绝且不再提示
     } else {
       PermissionStatus newStatus = await permission.request();
       print(newStatus.isGranted);
       if (newStatus.isGranted) {
-        TdSipPlugin.call("2107556514130605");
+        TdSipPlugin.call("10001");
       }
     }
   }
@@ -153,19 +153,21 @@ class _HomePageState extends State<HomePage>
                 height: 20,
               ),
               ElevatedButton(
-                child: Text("登录"),
+                child: Text("Login"),
                 onPressed: () {
-                  TdSipPlugin.login(
-                      sipID: "110000004",
-                      sipPassword: "285f758dff64a1d8",
-                      sipDomain: "47.106.186.8",
+                  final result = TdSipPlugin.login(
+                      sipID: "20002",
+                      sipPassword: "123456",
+                      sipDomain: "172.16.254.200",
                       sipPort: "8060",
                       turnEnable: false,
+                      sipTransport: "udp",
                       turnServer: "",
                       turnUser: "",
                       turnPassword: "",
-                      iceEnable: false
-                  );
+                      proxy: "sip:kamailio-production.mizban.com;transport=udp",
+                      iceEnable: false);
+                  debugPrint(result.toString());
                   // TdSipPlugin.login(
                   //     sipID: "100000004",
                   //     sipPassword: "2e30ec7daf9e99a1",
@@ -175,13 +177,13 @@ class _HomePageState extends State<HomePage>
                 },
               ),
               ElevatedButton(
-                child: Text("退出登录"),
+                child: Text("Logout"),
                 onPressed: () {
                   TdSipPlugin.logout();
                 },
               ),
               ElevatedButton(
-                child: Text("呼叫"),
+                child: Text("Check Permission"),
                 onPressed: () {
                   _checkPermission();
                 },
@@ -238,7 +240,6 @@ class _SipPageState extends State<SipPage> with TdSipObserver {
 
   @override
   Widget build(BuildContext context) {
-    print(ModalRoute.of(context).settings.arguments);
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       body: Container(
@@ -269,13 +270,13 @@ class _SipPageState extends State<SipPage> with TdSipObserver {
                 ),
               ),
               ElevatedButton(
-                child: Text("挂断"),
+                child: Text("HangUp"),
                 onPressed: () {
                   TdSipPlugin.hangup();
                 },
               ),
               ElevatedButton(
-                child: Text("接听"),
+                child: Text("Call"),
                 onPressed: () {
                   TdSipPlugin.answer();
                 },

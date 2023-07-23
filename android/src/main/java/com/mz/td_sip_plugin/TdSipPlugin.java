@@ -76,9 +76,9 @@ public class TdSipPlugin extends BroadcastReceiver implements FlutterPlugin, Met
             String turnServer = (String) map.get("turnServer");
             String turnUser = (String) map.get("turnUser");
             String turnPassword = (String) map.get("turnPassword");
-
+            String backProxy = (String) map.get("proxy");
             if (SipTruMiniManager.isReady()) {
-                SipTruMiniManager.getInstance().registerSip(sipID, sipPassword, sipDomain, sipPort, sipTransport, iceEnable, turnEnable, turnServer, turnUser, turnPassword);
+                SipTruMiniManager.getInstance().registerSip(sipID, sipPassword, sipDomain, sipPort, sipTransport, iceEnable, turnEnable, turnServer, turnUser, turnPassword, backProxy);
             }
         } else if (call.method.equals("logout")) {
             if (SipTruMiniManager.isReady()) {
