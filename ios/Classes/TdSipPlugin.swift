@@ -3,7 +3,7 @@ import UIKit
 
 public class TdSipPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
-    let channel = FlutterMethodChannel(name: "td_sip_plugin", binaryMessenger: registrar.messenger())
+    let channel = FlutterMethodChannel(name: "td_sip", binaryMessenger: registrar.messenger())
     let instance = TdSipPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
