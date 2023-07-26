@@ -1,27 +1,21 @@
 import Flutter
+import linphone
 
-class TdSipPlugin: NSObject, FlutterPlugin {
-    static func register(with registrar: FlutterPluginRegistrar) {
+public class TdSipPlugin: NSObject, FlutterPlugin {
+    public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "td_sip_plugin", binaryMessenger: registrar.messenger())
         let instance = TdSipPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
 
         registrar.register(TDDisplayViewFactory(messenger: registrar.messenger()), withId: "TDDisplayView")
         
-        //TDSipManager.shareInstance().delegate = self
-        //TDSipManager.shareInstance().loginStatusUpdate = { status in
-        //    if let eventSink = TDSipPluginManager.shared.streamHandler?.eventSink {
-        //        eventSink(["eventName": "loginStatus", "loginStatus": NSNumber(value: status.rawValue)])
-        //    }
-        //}
-
         let eventChannel = FlutterEventChannel(name: "td_sip_plugin_stream", binaryMessenger: registrar.messenger())
         eventChannel.setStreamHandler(TDSipPluginManager.shared.streamHandler)
         
         LinphoneManager.shared.initialize()
     }
 
-    func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
         case "login":
             guard let args = call.arguments as? [String: Any],
