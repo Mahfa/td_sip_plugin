@@ -15,7 +15,6 @@ A new Flutter plugin project.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.dependency 'TDSip','1.0.5'
   s.dependency 'linphone-sdk'
   s.platform = :ios, '11.0'
 
