@@ -1,28 +1,47 @@
 PODS:
   - Flutter (1.0.0)
+  - integration_test (0.0.1):
+    - Flutter
+  - linphone-sdk (5.2.79)
   - mz_back_plugin (0.0.1):
     - Flutter
   - permission_handler_apple (9.1.1):
     - Flutter
+  - td_sip_plugin (0.0.1):
+    - Flutter
+    - linphone-sdk
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
   - mz_back_plugin (from `.symlinks/plugins/mz_back_plugin/ios`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - td_sip_plugin (from `.symlinks/plugins/td_sip_plugin/ios`)
+
+SPEC REPOS:
+  https://gitlab.linphone.org/BC/public/podspec.git:
+    - linphone-sdk
 
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
   mz_back_plugin:
     :path: ".symlinks/plugins/mz_back_plugin/ios"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
+  td_sip_plugin:
+    :path: ".symlinks/plugins/td_sip_plugin/ios"
 
 SPEC CHECKSUMS:
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
+  integration_test: 13825b8a9334a850581300559b8839134b124670
+  linphone-sdk: ece51c6895d1e2a14163f59cb9b3b3c6e522a3cc
   mz_back_plugin: 96b4b5d4286e3cc276d2ac1f3e1771a36a84bf5c
   permission_handler_apple: e76247795d700c14ea09e3a2d8855d41ee80a2e6
+  td_sip_plugin: f0a97998922c427cb85723d6d01cb24ae4b36632
 
-PODFILE CHECKSUM: bd2f3dbb3bdba5d9625c6b392cd8072104088711
+PODFILE CHECKSUM: 8387a0e3c7590b11105d96b71b6f919898159cf1
 
 COCOAPODS: 1.11.3
