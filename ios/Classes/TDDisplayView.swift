@@ -2,7 +2,6 @@
 
 import Foundation
 import Flutter
-#import "UIImageView+WebCache.h";
 
 class TDDisplayView: NSObject, FlutterPlatformView {
     private var displayView: UIImageView?
@@ -11,9 +10,9 @@ class TDDisplayView: NSObject, FlutterPlatformView {
     init(frame: CGRect, viewId: Int64, args: Any?, binaryMessenger messenger: FlutterBinaryMessenger) {
         self.frame = frame
         super.init()
-        self.displayView = UIImageView(frame: frame)
-        self.displayView?.backgroundColor = UIColor.black
-        LinphoneManager.shared.setVideoView(displayView:self.displayView!)
+        //self.displayView = UIImageView(frame: frame)
+        //self.displayView?.backgroundColor = UIColor.black
+        LinphoneManager.shared.setVideoView(viewId: viewId)
     }
 
     func view() -> UIView {

@@ -314,8 +314,11 @@ class LinphoneManager: NSObject {
     public func getLinphoneCallState() -> LinphoneCallState? {
         return lastLinphoneCallState;
     }
-    public func setVideoView(displayView:UIImageView){
-        linphone_core_set_native_video_window_id(linphoneCore,displayView)
-        linphone_core_enable_video_display (linphoneCore, 1)
+    public func setVideoView(viewId: Int64){
+        let intPointer = UnsafeMutablePointer<Int64>.allocate (capacity: 1)
+        intPointer.pointee = viewId
+        intPointer.withMemoryRebound (to: UInt8.self, capacity: MemoryLayout<Int64>.size) { (pointer: UnsafeMutablePointer<UInt8>) in linphone_core_set_native_video_window_id(linphoneCore,UnsafeMutableRawPointer(pointer))
+            linphone_core_enable_video_display (linphoneCore, 1)}
+        
     }
 }
