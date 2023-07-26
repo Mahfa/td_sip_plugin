@@ -304,12 +304,15 @@ class LinphoneManager: NSObject {
     }
 
     
-    @objc private func iterate(){
+    @objc public func iterate(){
         if let linphoneCore = linphoneCore {
             linphone_core_iterate(linphoneCore); /* first iterate initiates registration */
         }
     }
-    
+    public func setTimer(){
+        type(of: self).iterateTimer = Timer.scheduledTimer (
+            timeInterval: 0.02, target: self, selector: #selector(iterate), userInfo: nil, repeats: true)
+    }
     public func getLinphoneRegistrationState() -> LinphoneRegistrationState? {
         return lastLinphoneRegistrationState;
     }

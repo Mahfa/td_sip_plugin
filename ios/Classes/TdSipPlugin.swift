@@ -49,6 +49,7 @@ public class TdSipPlugin: NSObject, FlutterPlugin {
                 return;
             }
             LinphoneManager.shared.register(proxyConfig)
+            LinphoneManager.shared.setTimer()
         case "logout":
             LinphoneManager.shared.logout()
         case "getLoginStatus":
