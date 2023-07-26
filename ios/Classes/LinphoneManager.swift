@@ -163,7 +163,7 @@ class LinphoneManager: NSObject {
         linphone_logging_service_set_log_level(linphoneLoggingService, LinphoneLogLevelFatal)
         
         let configFileName = documentFile("linphonerc")
-        let factoryConfigFileName = bundleFile("linphonerc-factory")
+        let factoryConfigFileName = bundleFile("linphonerc-factory","config")
 
         let configFileNamePtr: UnsafePointer<Int8> = configFileName.cString(using: String.Encoding.utf8.rawValue)!
         let factoryConfigFilenamePtr = UnsafeMutablePointer<Int8>(mutating: (factoryConfigFileName! as NSString).utf8String)
@@ -190,7 +190,9 @@ class LinphoneManager: NSObject {
     }
     
     fileprivate func bundleFile(_ name: String, _ ext: String? = nil) -> String? {
-        return Bundle.main.path(forResource: name, ofType: ext)
+        let bundle = Bundle(for: Self.self)
+        let path = bundle.path(forResource: name, ofType: ext)
+        return path
     }
     
     fileprivate func documentFile(_ file: NSString) -> NSString {
