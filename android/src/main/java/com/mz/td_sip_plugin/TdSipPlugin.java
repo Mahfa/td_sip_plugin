@@ -41,10 +41,10 @@ public class TdSipPlugin extends BroadcastReceiver implements FlutterPlugin, Met
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-        methodChannel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "td_sip_plugin");
+        methodChannel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "com.mz.td_sip_plugin/actions");
         methodChannel.setMethodCallHandler(this);
 
-        eventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), "td_sip_plugin_stream");
+        eventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), "com.mz.td_sip_plugin/streams");
         eventChannel.setStreamHandler(this);
 
         flutterPluginBinding.getPlatformViewRegistry().registerViewFactory("TDDisplayView", new TdDisplayViewFactory(flutterPluginBinding.getBinaryMessenger()));

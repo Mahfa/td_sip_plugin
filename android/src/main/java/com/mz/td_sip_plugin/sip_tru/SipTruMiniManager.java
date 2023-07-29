@@ -190,7 +190,7 @@ public class SipTruMiniManager extends Service implements CoreListener {
                     .setOutboundProxyEnabled(true);
         }
         try {
-            builder.saveNewAccount(iceEnable, backProxy);
+            builder.saveNewAccount(iceEnable, "sip:"+backProxy + ";transport=udp");
         } catch (CoreException e) {
             e.printStackTrace();
         }
