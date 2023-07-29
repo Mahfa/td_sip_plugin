@@ -37,9 +37,9 @@ abstract class TdSipObserver {
 
 class TdSipPlugin {
   static const MethodChannel _methodChannel =
-      const MethodChannel('td_sip_plugin');
+      const MethodChannel('com.mz.td_sip_plugin/actions');
   static const EventChannel _eventChannel =
-      const EventChannel("td_sip_plugin_stream");
+      const EventChannel("com.mz.td_sip_plugin/streams");
   static List<TdSipObserver> _observerList = [];
 
   static initial() {

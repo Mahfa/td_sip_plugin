@@ -1,20 +1,23 @@
 import Flutter
-import linphone
+import linphonesw
 
-public class TdSipPlugin: NSObject, FlutterPlugin {
+public class TdSipPlugin: NSObject, FlutterPlugin ,FlutterStreamHandler{
+    public static var eventSink: FlutterEventSink?
+    
     public static func register(with registrar: FlutterPluginRegistrar) {
-        let channel = FlutterMethodChannel(name: "td_sip_plugin", binaryMessenger: registrar.messenger())
         let instance = TdSipPlugin()
-        registrar.addMethodCallDelegate(instance, channel: channel)
-
-        registrar.register(TDDisplayViewFactory(messenger: registrar.messenger()), withId: "TDDisplayView")
+        let eventChannel = FlutterEventChannel(name: "com.mz.td_sip_plugin/streams", binaryMessenger: registrar.messenger())
+        eventChannel.setStreamHandler(instance)
         
-        let eventChannel = FlutterEventChannel(name: "td_sip_plugin_stream", binaryMessenger: registrar.messenger())
-        eventChannel.setStreamHandler(TDSipPluginManager.shared.streamHandler)
+        let channel = FlutterMethodChannel(name: "com.mz.td_sip_plugin/actions", binaryMessenger: registrar.messenger())
+        
+        registrar.addMethodCallDelegate(instance, channel: channel)
+        
+        registrar.register(TDDisplayViewFactory(messenger: registrar.messenger()), withId: "TDDisplayView")
         
         LinphoneManager.shared.initialize()
     }
-
+    
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
         case "login":
@@ -34,26 +37,21 @@ public class TdSipPlugin: NSObject, FlutterPlugin {
                 result(FlutterError(code: "invalid_arguments", message: "Invalid arguments for login", details: nil))
                 return
             }
-            guard let proxyConfig = LinphoneManager.shared.setIdentify(sipID:sipID,
-                                                                       sipPassword:sipPassword,
-                                                                       sipDomain:sipDomain,
-                                                                       sipPort:sipPort,
-                                                                       sipTransport:sipTransport,
-                                                                       iceEnable:iceEnable,
-                                                                       turnEnable:turnEnable,
-                                                                       turnServer:turnServer,
-                                                                       turnUser:turnUser,
-                                                                       turnPassword:turnPassword,
-                                                                       proxy:proxy) else {
-                print("no identity")
-                return;
-            }
-            LinphoneManager.shared.register(proxyConfig)
-            LinphoneManager.shared.setTimer()
+            LinphoneManager.shared.register(sipID:sipID,
+                                            sipPassword:sipPassword,
+                                            sipDomain:sipDomain,
+                                            sipPort:sipPort,
+                                            sipTransport:sipTransport,
+                                            iceEnable:iceEnable,
+                                            turnEnable:turnEnable,
+                                            turnServer:turnServer,
+                                            turnUser:turnUser,
+                                            turnPassword:turnPassword,
+                                            proxy:proxy)
         case "logout":
             LinphoneManager.shared.logout()
         case "getLoginStatus":
-            result(NSNumber(value: LinphoneManager.shared.getLinphoneRegistrationState()?.rawValue ?? LinphoneRegistrationNone.rawValue))
+            result(NSNumber(value: LinphoneManager.shared.getLinphoneRegistrationState()?.rawValue ?? RegistrationState.None.rawValue))
         case "call":
             guard let args = call.arguments as? [String: Any],
                   let sipID = args["sipID"] as? String else {
@@ -62,11 +60,11 @@ public class TdSipPlugin: NSObject, FlutterPlugin {
             }
             LinphoneManager.shared.makeCall(calleeAccount: sipID)
         case "answer":
-            if(LinphoneManager.shared.getLinphoneRegistrationState() == LinphoneRegistrationOk){
+            if(LinphoneManager.shared.getLinphoneRegistrationState() == RegistrationState.Ok){
                 LinphoneManager.shared.acceptSip();
             }
         case "hangup":
-            if(LinphoneManager.shared.getLinphoneRegistrationState() == LinphoneRegistrationOk){
+            if(LinphoneManager.shared.getLinphoneRegistrationState() == RegistrationState.Ok){
                 LinphoneManager.shared.hangup();
             }
         case "switchToLoudspeaker":
@@ -80,5 +78,14 @@ public class TdSipPlugin: NSObject, FlutterPlugin {
         default:
             result(FlutterMethodNotImplemented)
         }
+    }
+    
+    public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+        TdSipPlugin.eventSink = events
+        return nil
+    }
+
+    public func onCancel(withArguments arguments: Any?) -> FlutterError? {
+        return nil
     }
 }
