@@ -8,13 +8,16 @@ import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.mz.td_sip_plugin.R;
 import com.mz.td_sip_plugin.TdSipPlugin;
 
 import org.linphone.core.AVPFMode;
+import org.linphone.core.Account;
 import org.linphone.core.Address;
+import org.linphone.core.AudioDevice;
 import org.linphone.core.AuthInfo;
 import org.linphone.core.AuthMethod;
 import org.linphone.core.Call;
@@ -23,6 +26,9 @@ import org.linphone.core.CallParams;
 import org.linphone.core.CallStats;
 import org.linphone.core.ChatMessage;
 import org.linphone.core.ChatRoom;
+import org.linphone.core.Conference;
+import org.linphone.core.ConferenceInfo;
+import org.linphone.core.ConferenceInfoError;
 import org.linphone.core.ConfiguringState;
 import org.linphone.core.Content;
 import org.linphone.core.Core;
@@ -79,9 +85,8 @@ public class SipTruMiniManager extends Service implements CoreListener {
     @Override
     public void onCreate() {
         super.onCreate();
-
+        Factory.instance().setDebugMode(true, "td-sip-linphone-logs");
         lcFactory = Factory.instance();
-        lcFactory.setDebugMode(false, "TDSip>>");
         mContext = this;
 
         try {
@@ -94,7 +99,7 @@ public class SipTruMiniManager extends Service implements CoreListener {
             mSiptruCore.addListener(this);
             String[] dnsServer = new String[]{"8.8.8.8"};
             mSiptruCore.setDnsServers(dnsServer);
-            mSiptruCore.enableAdaptiveRateControl(false);
+            mSiptruCore.setAdaptiveRateControlEnabled(false);
             mSiptruCore.start();
             mSiptruCore.setRootCa(basePath + "/rootca.pem");
             mSiptruCore.setRing(null);
@@ -149,7 +154,7 @@ public class SipTruMiniManager extends Service implements CoreListener {
         }
 
         // 不录入视频
-        mSiptruCore.enableVideoCapture(false);
+        mSiptruCore.setVideoCaptureEnabled(false);
     }
 
     /**
@@ -159,7 +164,6 @@ public class SipTruMiniManager extends Service implements CoreListener {
         if (mSiptruCore == null) {
             return;
         }
-        mSiptruCore.setInCallTimeout(65);
         for (ProxyConfig proxyConfig : mSiptruCore.getProxyConfigList()) {
             mSiptruCore.removeProxyConfig(proxyConfig);
         }
@@ -176,7 +180,7 @@ public class SipTruMiniManager extends Service implements CoreListener {
                 .setDomain(sipDomain + ":" + sipPort)
                 .setHa1(null)
                 .setUserid(sipID)
-                .setExpires("120")
+                .setExpires("3600")
                 .setDisplayName("")//显示名
                 .setPassword(sipPassword);
         String prefix = null;
@@ -194,6 +198,8 @@ public class SipTruMiniManager extends Service implements CoreListener {
         } catch (CoreException e) {
             e.printStackTrace();
         }
+        mSiptruCore.setInCallTimeout(3600);
+        mSiptruCore.setPushIncomingCallTimeout(3600);
     }
 
     /**
@@ -227,7 +233,7 @@ public class SipTruMiniManager extends Service implements CoreListener {
         Address address = mSiptruCore.interpretUrl(username + "@" + host);
         address.setDisplayName(username);
         CallParams params = mSiptruCore.createCallParams(null);
-        params.enableVideo(true);
+        params.setVideoEnabled(true);
         mSiptruCore.inviteAddressWithParams(address, params);
     }
 
@@ -261,7 +267,7 @@ public class SipTruMiniManager extends Service implements CoreListener {
         if (mSiptruCore == null || mInstance == null) {
             return;
         }
-        mSiptruCore.enableMic(false);
+        mSiptruCore.setMicEnabled(false);
     }
 
     /**
@@ -271,7 +277,7 @@ public class SipTruMiniManager extends Service implements CoreListener {
         if (mSiptruCore == null || mInstance == null) {
             return;
         }
-        mSiptruCore.enableMic(true);
+        mSiptruCore.setMicEnabled(true);
     }
 
     /**
@@ -284,7 +290,7 @@ public class SipTruMiniManager extends Service implements CoreListener {
         Call currentCall = mSiptruCore.getCurrentCall();
         if (currentCall != null) {
             CallParams params = mSiptruCore.createCallParams(currentCall);
-            params.enableVideo(true);
+            params.setVideoEnabled(true);
             currentCall.acceptWithParams(params);
         }
     }
@@ -296,9 +302,9 @@ public class SipTruMiniManager extends Service implements CoreListener {
         }
         NatPolicy nat = getOrCreateNatPolicy();
         nat.setStunServer(host);
-        nat.enableIce(true);
-        nat.enableStun(true);
-        nat.enableTurn(true);
+        nat.setTurnEnabled(true);
+        nat.setStunEnabled(true);
+        nat.setIceEnabled(true);
         AuthInfo authInfo = getLC().findAuthInfo(null, nat.getStunServerUsername(), null);
 
         if (authInfo != null) {
@@ -339,10 +345,11 @@ public class SipTruMiniManager extends Service implements CoreListener {
         String stateStr = state.toString();
         Log.d("onCallStateChanged",stateStr);
         if (TextUtils.isEmpty(mCurrentAddress)) {
+
             mCurrentAddress = call.getRemoteAddressAsString();
         }
         if (state == Call.State.IncomingReceived || state == Call.State.IncomingEarlyMedia) {
-            call.enableCamera(false);
+            call.setCameraEnabled(false);
             if (!TextUtils.isEmpty(mCurrentAddress) && !call.getRemoteAddressAsString().equalsIgnoreCase(mCurrentAddress)) {
                 ErrorInfo errorInfo = call.getErrorInfo();
                 errorInfo.set("SIP", Reason.Forbidden, 403, "Another call is in progress", null);
@@ -354,7 +361,7 @@ public class SipTruMiniManager extends Service implements CoreListener {
                 mSipPlugin.callStatusUpdate("incoming", call.getRemoteAddress().getUsername());
             }
         } else if (state == Call.State.OutgoingProgress) {
-            call.enableCamera(false);
+            call.setCameraEnabled(false);
             if (mSipPlugin != null) {
                 mSipPlugin.callStatusUpdate("outgoing", null);
             }
@@ -401,6 +408,16 @@ public class SipTruMiniManager extends Service implements CoreListener {
     }
 
     @Override
+    public void onAudioDevicesListUpdated(@NonNull Core core) {
+
+    }
+
+    @Override
+    public void onMessageSent(@NonNull Core core, @NonNull ChatRoom chatRoom, @NonNull ChatMessage message) {
+
+    }
+
+    @Override
     public void onCallLogUpdated(Core core, CallLog callLog) {
 
     }
@@ -421,7 +438,17 @@ public class SipTruMiniManager extends Service implements CoreListener {
     }
 
     @Override
+    public void onConferenceStateChanged(@NonNull Core core, @NonNull Conference conference, Conference.State state) {
+
+    }
+
+    @Override
     public void onBuddyInfoUpdated(Core core, Friend friend) {
+
+    }
+
+    @Override
+    public void onFirstCallStarted(@NonNull Core core) {
 
     }
 
@@ -436,7 +463,27 @@ public class SipTruMiniManager extends Service implements CoreListener {
     }
 
     @Override
+    public void onAccountRegistrationStateChanged(@NonNull Core core, @NonNull Account account, RegistrationState state, @NonNull String message) {
+
+    }
+
+    @Override
+    public void onConferenceInfoOnParticipantSent(@NonNull Core core, @NonNull ConferenceInfo conferenceInfo, @NonNull Address participant) {
+
+    }
+
+    @Override
+    public void onCallIdUpdated(@NonNull Core core, @NonNull String previousCallId, @NonNull String currentCallId) {
+
+    }
+
+    @Override
     public void onNewSubscriptionRequested(Core core, Friend friend, String s) {
+
+    }
+
+    @Override
+    public void onNotifySent(@NonNull Core core, @NonNull Event linphoneEvent, @NonNull Content body) {
 
     }
 
@@ -471,6 +518,11 @@ public class SipTruMiniManager extends Service implements CoreListener {
     }
 
     @Override
+    public void onLastCallEnded(@NonNull Core core) {
+
+    }
+
+    @Override
     public void onCallStatsUpdated(Core core, Call call, CallStats callStats) {
 
     }
@@ -496,7 +548,22 @@ public class SipTruMiniManager extends Service implements CoreListener {
     }
 
     @Override
+    public void onQrcodeFound(@NonNull Core core, @Nullable String result) {
+
+    }
+
+    @Override
+    public void onAudioDeviceChanged(@NonNull Core core, @NonNull AudioDevice audioDevice) {
+
+    }
+
+    @Override
     public void onPublishStateChanged(Core core, Event event, PublishState publishState) {
+
+    }
+
+    @Override
+    public void onConferenceInfoOnParticipantError(@NonNull Core core, @NonNull ConferenceInfo conferenceInfo, @NonNull Address participant, ConferenceInfoError error) {
 
     }
 
@@ -506,12 +573,27 @@ public class SipTruMiniManager extends Service implements CoreListener {
     }
 
     @Override
+    public void onChatRoomEphemeralMessageDeleted(@NonNull Core core, @NonNull ChatRoom chatRoom) {
+
+    }
+
+    @Override
     public void onIsComposingReceived(Core core, ChatRoom chatRoom) {
 
     }
 
     @Override
+    public void onChatRoomRead(@NonNull Core core, @NonNull ChatRoom chatRoom) {
+
+    }
+
+    @Override
     public void onMessageReceivedUnableDecrypt(Core core, ChatRoom chatRoom, ChatMessage chatMessage) {
+
+    }
+
+    @Override
+    public void onConferenceInfoOnSent(@NonNull Core core, @NonNull ConferenceInfo conferenceInfo) {
 
     }
 
@@ -531,6 +613,11 @@ public class SipTruMiniManager extends Service implements CoreListener {
     }
 
     @Override
+    public void onChatRoomSubjectChanged(@NonNull Core core, @NonNull ChatRoom chatRoom) {
+
+    }
+
+    @Override
     public void onGlobalStateChanged(Core core, GlobalState globalState, String s) {
 
     }
@@ -542,6 +629,11 @@ public class SipTruMiniManager extends Service implements CoreListener {
 
     @Override
     public void onDtmfReceived(Core core, Call call, int i) {
+
+    }
+
+    @Override
+    public void onImeeUserRegistration(@NonNull Core core, boolean status, @NonNull String userId, @NonNull String info) {
 
     }
 
@@ -677,13 +769,13 @@ public class SipTruMiniManager extends Service implements CoreListener {
             prxCfg.setIdentityAddress(identityAddr);
             prxCfg.setServerAddr(proxyAddr.asStringUriOnly());
             prxCfg.setRoute(route);
-            prxCfg.enableRegister(tempEnabled);
+            prxCfg.setRegisterEnabled(tempEnabled);
             if (tempExpire != null) {
                 prxCfg.setExpires(Integer.parseInt(tempExpire));
             }
             prxCfg.setAvpfMode(tempAvpfEnabled ? AVPFMode.Enabled : AVPFMode.Disabled);
             prxCfg.setAvpfRrInterval(tempAvpfRRInterval);
-            prxCfg.enableQualityReporting(tempQualityReportingEnabled);
+            prxCfg.setQualityReportingEnabled(tempQualityReportingEnabled);
             prxCfg.setQualityReportingInterval(tempQualityReportingInterval);
             if (tempPrefix != null) {
                 prxCfg.setDialPrefix(tempPrefix);
@@ -694,9 +786,9 @@ public class SipTruMiniManager extends Service implements CoreListener {
             if (!isOpenIce) {
                 prxCfg.edit();
                 NatPolicy natPolicy = getInstance().getLC().createNatPolicy();
-                natPolicy.enableTurn(false);
-                natPolicy.enableStun(false);
-                natPolicy.enableIce(false);
+                natPolicy.setTurnEnabled(false);
+                natPolicy.setStunEnabled(false);
+                natPolicy.setIceEnabled(false);
                 prxCfg.setNatPolicy(natPolicy);
                 prxCfg.done();
             }
