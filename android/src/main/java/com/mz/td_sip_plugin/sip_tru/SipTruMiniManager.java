@@ -85,7 +85,7 @@ public class SipTruMiniManager extends Service implements CoreListener {
     @Override
     public void onCreate() {
         super.onCreate();
-        Factory.instance().setDebugMode(true, "td-sip-linphone-logs");
+        Factory.instance().setDebugMode(false, "td-sip-linphone-logs");
         lcFactory = Factory.instance();
         mContext = this;
 
