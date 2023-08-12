@@ -114,8 +114,9 @@ class LinphoneManager: NSObject {
     
     func makeCall(calleeAccount:String){
         mCore.invite(url: calleeAccount)
+
     }
-    
+
     func logout(){
         do{
             try mCore.terminateAllCalls()
@@ -123,8 +124,8 @@ class LinphoneManager: NSObject {
             mCore.clearAllAuthInfo()
         }catch{}
     }
-    
-    
+
+
     func register(sipID:String,
                   sipPassword:String,
                   sipDomain:String,
@@ -136,65 +137,24 @@ class LinphoneManager: NSObject {
                   turnUser:String,
                   turnPassword:String,
                   proxy:String) {
-        
-        
+
         do {
-            
-            var transport : TransportType = TransportType.Udp
-            
-            let authInfo = try Factory.Instance.createAuthInfo(username: sipID, userid: "", passwd: sipPassword, ha1: "", realm: "", domain: sipDomain)
-            let accountParams = try mCore.createAccountParams()
-            
-            // A SIP account is identified by an identity address that we can construct from the username and domain
-            let identity1 = try Factory.Instance.createAddress(addr: String("sip:" + sipID + "@" + sipDomain))
-            try! accountParams.setIdentityaddress(newValue: identity1)
-            
-            // We also need to configure where the proxy server is located
-            let address = try Factory.Instance.createAddress(addr: String("sip:" + proxy))
-            
-            // We use the Address object to easily set the transport protocol
-            try address.setTransport(newValue: transport)
-            try accountParams.setServeraddress(newValue: address)
-            // And we ensure the account will start the registration process
-            accountParams.registerEnabled = true
-            
-            // Now that our AccountParams is configured, we can create the Account object
-            let account = try mCore.createAccount(params: accountParams)
-            
-            // Now let's add our objects to the Core
-            mCore.addAuthInfo(info: authInfo)
-            try mCore.addAccount(account: account)
-            
-            // Also set the newly added account as default
-            mCore.defaultAccount = account
-            
-            
-            
-            let identity = "sip:" + sipID + "@" + sipPassword + ":" + sipPort
-            
-            guard let address = try? mCore.createAddress(address: identity) else {
-                print("\(identity) not a valid sip uri, must be like sip:toto@sip.linphone.org")
-                return
-            }
-            
-            let config = try mCore.createProxyConfig()
-            try config.setIdentityaddress(newValue: address)
-            try config.setRoute(newValue: "\(sipDomain):\(sipPort)")
-            try config.setServeraddr(newValue: "\(proxy)")
-            config.registerEnabled = false
-            config.publishEnabled = false
-            
-            // Now let's add our objects to the Core
-            mCore.addAuthInfo(info: authInfo)
-            try mCore.addAccount(account: account)
-            
-            // Also set the newly added account as default
-            mCore.defaultAccount = account
-            
-            try mCore.addProxyConfig(config:config)
-            mCore.defaultProxyConfig = config
-            
-        } catch { NSLog(error.localizedDescription) }
+
+                    let authInfo = try Factory.Instance.createAuthInfo(username: sipID, userid: "", passwd: sipPassword, ha1: "", realm: "", domain: sipDomain)
+                    let accountParams = try mCore.createAccountParams()
+                    let identity = try Factory.Instance.createAddress(addr: String("sip:" + sipID + "@" + sipDomain))
+                    try! accountParams.setIdentityaddress(newValue: identity)
+                    let address = try Factory.Instance.createAddress(addr: String("sip:" + proxy))
+                    try address.setTransport(newValue: TransportType.Udp)
+                    try accountParams.setServeraddress(newValue: address)
+                    accountParams.registerEnabled = true
+                    let account = try mCore.createAccount(params: accountParams)
+                    mCore.addAuthInfo(info: authInfo)
+                    try mCore.addAccount(account: account)
+                    mCore.defaultAccount = account
+
+                } catch { NSLog(error.localizedDescription) }
+
     }
     
     func acceptSip(){
