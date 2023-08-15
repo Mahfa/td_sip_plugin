@@ -34,9 +34,9 @@ import io.flutter.plugin.common.MethodChannel.Result;
  */
 public class TdSipPlugin extends BroadcastReceiver implements FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler, SipTruMiniManagerListener, ActivityAware {
 
-    private MethodChannel methodChannel;
-    private EventChannel eventChannel;
-    private EventChannel.EventSink mEvents;
+    private static MethodChannel methodChannel;
+    private static EventChannel eventChannel;
+    private static EventChannel.EventSink mEvents;
     private Activity mActivity;
 
     @Override
