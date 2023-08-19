@@ -139,21 +139,31 @@ class LinphoneManager: NSObject {
                   proxy:String) {
 
         do {
-
-                    let authInfo = try Factory.Instance.createAuthInfo(username: sipID, userid: "", passwd: sipPassword, ha1: "", realm: "", domain: sipDomain)
-                    let accountParams = try mCore.createAccountParams()
-                    let identity = try Factory.Instance.createAddress(addr: String("sip:" + sipID + "@" + sipDomain))
-                    try! accountParams.setIdentityaddress(newValue: identity)
-                    let address = try Factory.Instance.createAddress(addr: String("sip:" + proxy))
-                    try address.setTransport(newValue: TransportType.Udp)
-                    try accountParams.setServeraddress(newValue: address)
-                    accountParams.registerEnabled = true
-                    let account = try mCore.createAccount(params: accountParams)
-                    mCore.addAuthInfo(info: authInfo)
-                    try mCore.addAccount(account: account)
-                    mCore.defaultAccount = account
-
-                } catch { NSLog(error.localizedDescription) }
+            if(mCore.accountList.count > 0 && mCore.authInfoList[0].username == sipID){
+                mCore.refreshRegisters();
+                mCore.iterate();
+            }else{
+                for account in mCore.accountList{
+                    mCore.removeAccount(account: account);
+                }
+                for info in mCore.authInfoList{
+                    mCore.removeAuthInfo(info: info);
+                }
+                let authInfo = try Factory.Instance.createAuthInfo(username: sipID, userid: "", passwd: sipPassword, ha1: "", realm: "", domain: sipDomain)
+                let accountParams = try mCore.createAccountParams()
+                let identity = try Factory.Instance.createAddress(addr: String("sip:" + sipID + "@" + sipDomain))
+                try! accountParams.setIdentityaddress(newValue: identity)
+                let address = try Factory.Instance.createAddress(addr: String("sip:" + proxy))
+                try address.setTransport(newValue: TransportType.Udp)
+                try accountParams.setServeraddress(newValue: address)
+                accountParams.registerEnabled = true
+                accountParams.expires = 120
+                let account = try mCore.createAccount(params: accountParams)
+                mCore.addAuthInfo(info: authInfo)
+                try mCore.addAccount(account: account)
+                mCore.defaultAccount = account
+            }
+        } catch { NSLog(error.localizedDescription) }
 
     }
     
