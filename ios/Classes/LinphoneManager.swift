@@ -80,7 +80,7 @@ class LinphoneManager: NSObject {
                     }catch{}
                     return;
                 }
-                TdSipPlugin.eventSink?(["eventName": "didReceiveCallForID","sipID":call.remoteAddress?.username])
+                TdSipPlugin.eventSink?(["eventName": "didReceiveCallForID","sipID":call.remoteAddress?.username],"phoneNumber" : call.remoteAddressAsString.split(separator: " ")[0].replace("\"", with:""))
             } else if (state == Call.State.OutgoingProgress) {
                 call.cameraEnabled = false;
                 TdSipPlugin.eventSink?(["eventName": "didCallOut","sipID":nil])
@@ -102,16 +102,16 @@ class LinphoneManager: NSObject {
                 self.mCurrentAddress = "";
                 TdSipPlugin.eventSink?(["eventName": "didCallEnd","sipID":nil])
             }
-            
+
         })
-        
-        
+
+
         mCore.addDelegate(delegate: mCallStateDelegate)
         mCore.addDelegate(delegate: mRegistrationDelegate)
-        
+
     }
-    
-    
+
+
     func makeCall(calleeAccount:String){
         mCore.invite(url: calleeAccount)
 
