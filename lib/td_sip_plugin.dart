@@ -32,7 +32,7 @@ abstract class TdSipObserver {
   void tdSipStreamsDidBeginRunning() {}
 
   /// 收到呼叫（"sipID">呼叫方的sipID）
-  void tdSipDidReceiveCallForID(String sipID) {}
+  void tdSipDidReceiveCallForID(String sipID,String phoneNumber) {}
 }
 
 class TdSipPlugin {
@@ -59,7 +59,7 @@ class TdSipPlugin {
           break;
         case "didReceiveCallForID":
           _observerList.forEach((TdSipObserver observer) {
-            observer.tdSipDidReceiveCallForID(map["sipID"]);
+            observer.tdSipDidReceiveCallForID(map["sipID"],map["phoneNumber"]);
           });
           break;
         case "didCallOut":

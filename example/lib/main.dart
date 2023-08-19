@@ -91,8 +91,8 @@ class _HomePageState extends State<HomePage>
   }
 
   @override
-  void tdSipDidReceiveCallForID(String sipID) {
-    super.tdSipDidReceiveCallForID(sipID);
+  void tdSipDidReceiveCallForID(String sipID,String phoneNumber) {
+    super.tdSipDidReceiveCallForID(sipID,phoneNumber);
 
     /// 设置呼叫页面息屏显示后，只有iOS需要做页面跳转处理，Android已在原生底层处理，只需要实现路由为"/td_sip_page"的页面即可
     /// ⚠️ 路由"/td_sip_page"为固定的呼叫页面路由

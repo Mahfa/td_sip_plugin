@@ -3,5 +3,5 @@ import org.linphone.core.RegistrationState;
 
 public interface SipTruMiniManagerListener {
     void registerStatusUpdate(RegistrationState state);
-    void callStatusUpdate(String status, String sipID);
+    void callStatusUpdate(String status, String sipID,String phoneNumber);
 }

@@ -367,18 +367,19 @@ public class SipTruMiniManager extends Service implements CoreListener {
                 return;
             }
             if (mSipPlugin != null) {
-                mSipPlugin.callStatusUpdate("incoming", call.getRemoteAddress().getUsername());
+                mSipPlugin.callStatusUpdate("incoming", call.getRemoteAddress().getUsername(),call.getRemoteAddressAsString().split(" ")[0].replace("\"", ""));
+
             }
         } else if (state == Call.State.OutgoingProgress) {
             call.setCameraEnabled(false);
             if (mSipPlugin != null) {
-                mSipPlugin.callStatusUpdate("outgoing", null);
+                mSipPlugin.callStatusUpdate("outgoing", null,null);
             }
         } else if (state == Call.State.StreamsRunning) {
             openAmplification(true);
             mInstance.isOpenAmplification = true;
             if (mSipPlugin != null) {
-                mSipPlugin.callStatusUpdate("streamsRunning", null);
+                mSipPlugin.callStatusUpdate("streamsRunning", null,null);
             }
         } else if (s.contains("Another") ||
                 s.contains("declined") ||
@@ -388,7 +389,7 @@ public class SipTruMiniManager extends Service implements CoreListener {
             }
             mCurrentAddress = "";
             if (mSipPlugin != null) {
-                mSipPlugin.callStatusUpdate("busy", null);
+                mSipPlugin.callStatusUpdate("busy", null,null);
             }
         } else if (state == Call.State.Released) {
             if (!call.getRemoteAddressAsString().equalsIgnoreCase(mCurrentAddress)) {
@@ -396,7 +397,7 @@ public class SipTruMiniManager extends Service implements CoreListener {
             }
             mCurrentAddress = "";
             if (mSipPlugin != null) {
-                mSipPlugin.callStatusUpdate("End", null);
+                mSipPlugin.callStatusUpdate("End", null,null);
             }
         }
     }
