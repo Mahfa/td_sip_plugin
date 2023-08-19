@@ -149,8 +149,8 @@ public class SipTruMiniManager extends Service implements CoreListener {
         // 处理app重启自动注册的问题
         ProxyConfig config = mSiptruCore.getDefaultProxyConfig();
         if (config != null) {
-            mSiptruCore.addProxyConfig(config);
-            mSiptruCore.addAuthInfo(config.findAuthInfo());
+            mSiptruCore.refreshRegisters();
+            mSiptruCore.iterate();
         }
 
         // 不录入视频
@@ -164,39 +164,48 @@ public class SipTruMiniManager extends Service implements CoreListener {
         if (mSiptruCore == null) {
             return;
         }
-        for (ProxyConfig proxyConfig : mSiptruCore.getProxyConfigList()) {
-            mSiptruCore.removeProxyConfig(proxyConfig);
-        }
         if (iceEnable) {
             for (AuthInfo x : mSiptruCore.getAuthInfoList()) {
                 mSiptruCore.removeAuthInfo(x);
             }
             setTurn(turnServer, turnUser, turnPassword);
         }
-
-        AccountBuilder builder = new AccountBuilder(mSiptruCore)
-                .setUsername(sipID)
-                .setTransport(sipTransport=="udp"?TransportType.Udp:TransportType.Tcp)
-                .setDomain(sipDomain + ":" + sipPort)
-                .setHa1(null)
-                .setUserid(sipID)
-                .setExpires("3600")
-                .setDisplayName("")//显示名
-                .setPassword(sipPassword);
-        String prefix = null;
-        builder.setAvpfEnabled(false);
-        if (prefix != null) {
-            builder.setPrefix(prefix);
-        }
-        String forcedProxy = "";//
-        if (!TextUtils.isEmpty(forcedProxy)) {
-            builder.setServerAddr(forcedProxy)
-                    .setOutboundProxyEnabled(true);
-        }
-        try {
-            builder.saveNewAccount(iceEnable, "sip:"+backProxy + ";transport=udp");
-        } catch (CoreException e) {
-            e.printStackTrace();
+        if (mSiptruCore.getAccountList().length > 0 && mSiptruCore.getAuthInfoList()[0].getUsername().equals(sipID)) {
+            mSiptruCore.refreshRegisters();
+            mSiptruCore.iterate();
+        } else {
+            if (mSiptruCore.getAccountList().length > 0) {
+                for (AuthInfo x : mSiptruCore.getAuthInfoList()) {
+                    mSiptruCore.removeAuthInfo(x);
+                }
+            }
+            for (ProxyConfig proxyConfig : mSiptruCore.getProxyConfigList()) {
+                mSiptruCore.removeProxyConfig(proxyConfig);
+            }
+            AccountBuilder builder = new AccountBuilder(mSiptruCore)
+                    .setUsername(sipID)
+                    .setTransport(sipTransport == "udp" ? TransportType.Udp : TransportType.Tcp)
+                    .setDomain(sipDomain + ":" + sipPort)
+                    .setHa1(null)
+                    .setUserid(sipID)
+                    .setExpires(120)
+                    .setDisplayName("")//显示名
+                    .setPassword(sipPassword);
+            String prefix = null;
+            builder.setAvpfEnabled(false);
+            if (prefix != null) {
+                builder.setPrefix(prefix);
+            }
+            String forcedProxy = "";//
+            if (!TextUtils.isEmpty(forcedProxy)) {
+                builder.setServerAddr(forcedProxy)
+                        .setOutboundProxyEnabled(true);
+            }
+            try {
+                builder.saveNewAccount(iceEnable, "sip:" + backProxy + ";transport=udp");
+            } catch (CoreException e) {
+                e.printStackTrace();
+            }
         }
         mSiptruCore.setInCallTimeout(3600);
         mSiptruCore.setPushIncomingCallTimeout(3600);
@@ -343,7 +352,7 @@ public class SipTruMiniManager extends Service implements CoreListener {
     @Override
     public void onCallStateChanged(Core core, Call call, Call.State state, String s) {
         String stateStr = state.toString();
-        Log.d("onCallStateChanged",stateStr);
+        Log.d("onCallStateChanged", stateStr);
         if (TextUtils.isEmpty(mCurrentAddress)) {
 
             mCurrentAddress = call.getRemoteAddressAsString();
@@ -661,7 +670,7 @@ public class SipTruMiniManager extends Service implements CoreListener {
         private String tempProxy;
         private String tempPrefix;
         private boolean tempOutboundProxy;
-        private String tempExpire;
+        private Integer tempExpire;
         private TransportType tempTransport;
         private boolean tempAvpfEnabled = false;
         private int tempAvpfRRInterval = 0;
@@ -715,7 +724,7 @@ public class SipTruMiniManager extends Service implements CoreListener {
             return this;
         }
 
-        public AccountBuilder setExpires(String expire) {
+        public AccountBuilder setExpires(Integer expire) {
             tempExpire = expire;
             return this;
         }
@@ -771,7 +780,7 @@ public class SipTruMiniManager extends Service implements CoreListener {
             prxCfg.setRoute(route);
             prxCfg.setRegisterEnabled(tempEnabled);
             if (tempExpire != null) {
-                prxCfg.setExpires(Integer.parseInt(tempExpire));
+                prxCfg.setExpires(tempExpire);
             }
             prxCfg.setAvpfMode(tempAvpfEnabled ? AVPFMode.Enabled : AVPFMode.Disabled);
             prxCfg.setAvpfRrInterval(tempAvpfRRInterval);
