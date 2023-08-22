@@ -80,7 +80,7 @@ class LinphoneManager: NSObject {
                     }catch{}
                     return;
                 }
-                TdSipPlugin.eventSink?(["eventName": "didReceiveCallForID","sipID":call.remoteAddress?.username],"phoneNumber" : call.remoteAddressAsString.split(separator: " ")[0].replace("\"", with:""))
+                TdSipPlugin.eventSink?(["eventName": "didReceiveCallForID","sipID":call.remoteAddress?.username,"phoneNumber" : call.remoteAddressAsString.split(separator: " ")[0].replacingOccurrences(of: "\"", with:"")])
             } else if (state == Call.State.OutgoingProgress) {
                 call.cameraEnabled = false;
                 TdSipPlugin.eventSink?(["eventName": "didCallOut","sipID":nil])
