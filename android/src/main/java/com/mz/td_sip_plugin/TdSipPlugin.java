@@ -121,13 +121,22 @@ public class TdSipPlugin extends BroadcastReceiver implements FlutterPlugin, Met
             if (SipTruMiniManager.isReady()) {
                 SipTruMiniManager.getInstance().hangUp();
             }
-        } else if (call.method.equals("switchToLoudspeaker")) {
+
+        } else if (call.method.equals("routeAudioToEarpiece")) {
             if (SipTruMiniManager.isReady()) {
-                SipTruMiniManager.getInstance().openAmplification(true);
+                SipTruMiniManager.getInstance().routeAudioToEarpiece();
             }
-        } else if (call.method.equals("switchToEarphone")) {
+        } else if (call.method.equals("routeAudioToSpeaker")) {
             if (SipTruMiniManager.isReady()) {
-                SipTruMiniManager.getInstance().openAmplification(false);
+                SipTruMiniManager.getInstance().routeAudioToSpeaker();
+            }
+        } else if (call.method.equals("routeAudioToBluetooth")) {
+            if (SipTruMiniManager.isReady()) {
+                SipTruMiniManager.getInstance().routeAudioToBluetooth();
+            }
+        } else if (call.method.equals("routeAudioToHeadset")) {
+            if (SipTruMiniManager.isReady()) {
+                SipTruMiniManager.getInstance().routeAudioToHeadset();
             }
         } else if (call.method.equals("micOFF")) {
             if (SipTruMiniManager.isReady()) {
@@ -178,7 +187,7 @@ public class TdSipPlugin extends BroadcastReceiver implements FlutterPlugin, Met
     }
 
     @Override
-    public void callStatusUpdate(String status, final String sipID,String phoneNumber) {
+    public void callStatusUpdate(String status, final String sipID, String phoneNumber) {
         if (mEvents != null) {
             final HashMap<String, String> map = new HashMap<>();
             switch (status) {
