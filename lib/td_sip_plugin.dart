@@ -163,14 +163,22 @@ class TdSipPlugin {
   }
 
   /// 切换到免提（扬声器）
-  static switchToLoudspeaker() {
-    _methodChannel.invokeMethod("switchToLoudspeaker");
+  static routeAudioToEarpiece() {
+    _methodChannel.invokeMethod("routeAudioToEarpiece");
   }
 
-  /// 切换到听筒
-  static switchToEarphone() {
-    _methodChannel.invokeMethod("switchToEarphone");
+  static routeAudioToSpeaker() {
+    _methodChannel.invokeMethod("routeAudioToSpeaker");
   }
+  
+  static routeAudioToBluetooth() {
+    _methodChannel.invokeMethod("routeAudioToBluetooth");
+  }
+
+  static routeAudioToHeadset() {
+    _methodChannel.invokeMethod("routeAudioToHeadset");
+  }
+
 
   /// 关闭麦克风
   static micOFF() {
