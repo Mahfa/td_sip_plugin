@@ -4,13 +4,16 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
+import com.mz.td_sip_plugin.AudioRouteUtils;
 import com.mz.td_sip_plugin.R;
 import com.mz.td_sip_plugin.TdSipPlugin;
 
@@ -259,14 +262,38 @@ public class SipTruMiniManager extends Service implements CoreListener {
     /**
      * 打开扩音器
      */
-    public void openAmplification(boolean isOpen) {
+
+
+    public void routeAudioToEarpiece() {
         if (mSiptruCore == null || mInstance == null) {
             return;
         }
-        if (mAudioManager == null) {
+        AudioRouteUtils utils = new AudioRouteUtils(mSiptruCore);
+        utils.routeAudioToEarpiece(mSiptruCore.getCurrentCall());
+    }
+
+    public void routeAudioToSpeaker() {
+        if (mSiptruCore == null || mInstance == null) {
             return;
         }
-        mAudioManager.setSpeakerphoneOn(isOpen);
+        AudioRouteUtils utils = new AudioRouteUtils(mSiptruCore);
+        utils.routeAudioToSpeaker(mSiptruCore.getCurrentCall());
+    }
+
+    public void routeAudioToBluetooth() {
+        if (mSiptruCore == null || mInstance == null) {
+            return;
+        }
+        AudioRouteUtils utils = new AudioRouteUtils(mSiptruCore);
+        utils.routeAudioToBluetooth(mSiptruCore.getCurrentCall());
+    }
+
+    public void routeAudioToHeadset() {
+        if (mSiptruCore == null || mInstance == null) {
+            return;
+        }
+        AudioRouteUtils utils = new AudioRouteUtils(mSiptruCore);
+        utils.routeAudioToHeadset(mSiptruCore.getCurrentCall());
     }
 
     /**
@@ -367,19 +394,17 @@ public class SipTruMiniManager extends Service implements CoreListener {
                 return;
             }
             if (mSipPlugin != null) {
-                mSipPlugin.callStatusUpdate("incoming", call.getRemoteAddress().getUsername(),call.getRemoteAddressAsString().split(" ")[0].replace("\"", ""));
+                mSipPlugin.callStatusUpdate("incoming", call.getRemoteAddress().getUsername(), call.getRemoteAddressAsString().split(" ")[0].replace("\"", ""));
 
             }
         } else if (state == Call.State.OutgoingProgress) {
             call.setCameraEnabled(false);
             if (mSipPlugin != null) {
-                mSipPlugin.callStatusUpdate("outgoing", null,null);
+                mSipPlugin.callStatusUpdate("outgoing", null, null);
             }
         } else if (state == Call.State.StreamsRunning) {
-            openAmplification(true);
-            mInstance.isOpenAmplification = true;
             if (mSipPlugin != null) {
-                mSipPlugin.callStatusUpdate("streamsRunning", null,null);
+                mSipPlugin.callStatusUpdate("streamsRunning", null, null);
             }
         } else if (s.contains("Another") ||
                 s.contains("declined") ||
@@ -389,7 +414,7 @@ public class SipTruMiniManager extends Service implements CoreListener {
             }
             mCurrentAddress = "";
             if (mSipPlugin != null) {
-                mSipPlugin.callStatusUpdate("busy", null,null);
+                mSipPlugin.callStatusUpdate("busy", null, null);
             }
         } else if (state == Call.State.Released) {
             if (!call.getRemoteAddressAsString().equalsIgnoreCase(mCurrentAddress)) {
@@ -397,7 +422,7 @@ public class SipTruMiniManager extends Service implements CoreListener {
             }
             mCurrentAddress = "";
             if (mSipPlugin != null) {
-                mSipPlugin.callStatusUpdate("End", null,null);
+                mSipPlugin.callStatusUpdate("End", null, null);
             }
         }
     }
