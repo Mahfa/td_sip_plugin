@@ -36,6 +36,7 @@ class LinphoneManager: NSObject {
         LoggingService.Instance.logLevel = LogLevel.Debug
         
         try? mCore = Factory.Instance.createCore(configPath: "", factoryConfigPath: "", systemContext: nil)
+        AudioRouteUtils.core = mCore
         try? mCore.start()
         
         mRegistrationDelegate = CoreDelegateStub(onAccountRegistrationStateChanged: { (core: Core, account: Account, state: RegistrationState, message: String) in
@@ -85,7 +86,6 @@ class LinphoneManager: NSObject {
                 call.cameraEnabled = false;
                 TdSipPlugin.eventSink?(["eventName": "didCallOut","sipID":nil])
             } else if (state == Call.State.StreamsRunning) {
-                self.openAmplification(open:true)
                 TdSipPlugin.eventSink?(["eventName": "streamsDidBeginRunning","sipID":nil])
             } else if (message.contains("Another") ||
                        message.contains("declined") ||
@@ -195,20 +195,17 @@ class LinphoneManager: NSObject {
         mCore.micEnabled = open
     }
     
-    func openAmplification(open:Bool){
-        do{
-            // Get the audio session instance
-            let session = AVAudioSession.sharedInstance()
-            
-            // Override the output port to speaker
-            try session.overrideOutputAudioPort(.speaker)
-            
-            // Activate the session
-            try session.setActive(open)
-        }catch{
-            return;
-        }
-        
+    public func routeAudioToEarpiece(){
+        AudioRouteUtils.routeAudioToEarpiece(call:mCore.currentCall)
+    }
+    public func routeAudioToSpeaker(){
+        AudioRouteUtils.routeAudioToSpeaker(call:mCore.currentCall)
+    }
+    public func routeAudioToBluetooth(){
+        AudioRouteUtils.routeAudioToBluetooth(call:mCore.currentCall)
+    }
+    public func routeAudioToHeadset(){
+        AudioRouteUtils.routeAudioToHeadset(call:mCore.currentCall)
     }
     
     
