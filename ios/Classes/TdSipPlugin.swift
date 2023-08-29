@@ -67,10 +67,14 @@ public class TdSipPlugin: NSObject, FlutterPlugin ,FlutterStreamHandler{
             if(LinphoneManager.shared.getLinphoneRegistrationState() == RegistrationState.Ok){
                 LinphoneManager.shared.hangup();
             }
-        case "switchToLoudspeaker":
-            LinphoneManager.shared.openAmplification(open: true)
-        case "switchToEarphone":
-            LinphoneManager.shared.openAmplification(open: false)
+        case "routeAudioToEarpiece":
+            LinphoneManager.shared.routeAudioToEarpiece()
+        case "routeAudioToSpeaker":
+            LinphoneManager.shared.routeAudioToSpeaker()
+        case "routeAudioToBluetooth":
+            LinphoneManager.shared.routeAudioToBluetooth()
+        case "routeAudioToHeadset":
+            LinphoneManager.shared.routeAudioToHeadset()
         case "micOFF":
             LinphoneManager.shared.switchMic(open: false)
         case "micON":
