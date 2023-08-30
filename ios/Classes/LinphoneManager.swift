@@ -73,6 +73,8 @@ class LinphoneManager: NSObject {
             }
             
             if (state == Call.State.IncomingReceived || state == Call.State.OutgoingEarlyMedia) {
+//
+//
 //                call.cameraEnabled = false
 //                if (!self.mCurrentAddress.isEmpty && !(String(cString:call.remoteAddress!.asString()).caseInsensitiveCompare(self.mCurrentAddress) == .orderedSame)) {
 //                    call.errorInfo?.set(proto: "SIP", reason:Reason.Forbidden, code: 403, status: "Another call is in progress", warning: nil)
