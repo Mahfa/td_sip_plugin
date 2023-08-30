@@ -73,15 +73,15 @@ class LinphoneManager: NSObject {
             }
             
             if (state == Call.State.IncomingReceived || state == Call.State.OutgoingEarlyMedia) {
-                call.cameraEnabled = false
-                if (!self.mCurrentAddress.isEmpty && !(String(cString:call.remoteAddress!.asString()).caseInsensitiveCompare(self.mCurrentAddress) == .orderedSame)) {
-                    call.errorInfo?.set(proto: "SIP", reason:Reason.Forbidden, code: 403, status: "Another call is in progress", warning: nil)
-                    do{
-                        try self.mCore.terminateAllCalls()
-                    }catch{}
-                    return;
-                }
-                TdSipPlugin.eventSink?(["eventName": "didReceiveCallForID","sipID":call.remoteAddress?.username,"phoneNumber" : call.remoteAddressAsString.split(separator: " ")[0].replacingOccurrences(of: "\"", with:"")])
+//                call.cameraEnabled = false
+//                if (!self.mCurrentAddress.isEmpty && !(String(cString:call.remoteAddress!.asString()).caseInsensitiveCompare(self.mCurrentAddress) == .orderedSame)) {
+//                    call.errorInfo?.set(proto: "SIP", reason:Reason.Forbidden, code: 403, status: "Another call is in progress", warning: nil)
+//                    do{
+//                        try self.mCore.terminateAllCalls()
+//                    }catch{}
+//                    return;
+//                }
+//                TdSipPlugin.eventSink?(["eventName": "didReceiveCallForID","sipID":call.remoteAddress?.username,"phoneNumber" : call.remoteAddressAsString.split(separator: " ")[0].replacingOccurrences(of: "\"", with:"")])
             } else if (state == Call.State.OutgoingProgress) {
                 call.cameraEnabled = false;
                 TdSipPlugin.eventSink?(["eventName": "didCallOut","sipID":nil])
