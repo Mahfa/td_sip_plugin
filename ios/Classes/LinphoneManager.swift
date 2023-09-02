@@ -23,7 +23,6 @@ class LinphoneManager: NSObject {
     var loggedIn: Bool = false
     
     private var lastLinphoneRegistrationState: RegistrationState?
-    private var lastLinphoneCallState: Call.State?
     private var mCurrentAddress : String = ""
     private static var iterateTimer: Timer?
     
@@ -63,62 +62,58 @@ class LinphoneManager: NSObject {
         })
         
         mCallStateDelegate = CoreDelegateStub(onCallStateChanged: { (core:Core, call:Call, state:Call.State, message:String) in
-            self.lastLinphoneCallState = state;
             
             
             print("callStateChanged -> \(state.rawValue) -> \(message)")
             
             if(self.mCurrentAddress.isEmpty){
-                self.mCurrentAddress = String(cString:(call.remoteAddress?.asString())!);
+                self.mCurrentAddress = ((call.remoteAddress?.asString()) ?? "");
             }
             
             if (state == Call.State.IncomingReceived || state == Call.State.OutgoingEarlyMedia) {
-//
-//
-//                call.cameraEnabled = false
-//                if (!self.mCurrentAddress.isEmpty && !(String(cString:call.remoteAddress!.asString()).caseInsensitiveCompare(self.mCurrentAddress) == .orderedSame)) {
-//                    call.errorInfo?.set(proto: "SIP", reason:Reason.Forbidden, code: 403, status: "Another call is in progress", warning: nil)
-//                    do{
-//                        try self.mCore.terminateAllCalls()
-//                    }catch{}
-//                    return;
-//                }
-//                TdSipPlugin.eventSink?(["eventName": "didReceiveCallForID","sipID":call.remoteAddress?.username,"phoneNumber" : call.remoteAddressAsString.split(separator: " ")[0].replacingOccurrences(of: "\"", with:"")])
+                call.cameraEnabled = false
+                if (!self.mCurrentAddress.isEmpty && !(String(cString:call.remoteAddress!.asString()).caseInsensitiveCompare(self.mCurrentAddress) == .orderedSame)) {
+                    call.errorInfo?.set(proto: "SIP", reason:Reason.Forbidden, code: 403, status: "Another call is in progress", warning: nil)
+                    do{
+                        try self.mCore.terminateAllCalls()
+                    }catch{}
+                    return;
+                }
+                TdSipPlugin.eventSink?(["eventName": "didReceiveCallForID","sipID":call.remoteAddress?.username,"phoneNumber" : call.remoteAddressAsString.split(separator: " ")[0].replacingOccurrences(of: "\"", with:"")])
             } else if (state == Call.State.OutgoingProgress) {
-                call.cameraEnabled = false;
                 TdSipPlugin.eventSink?(["eventName": "didCallOut","sipID":nil])
             } else if (state == Call.State.StreamsRunning) {
                 TdSipPlugin.eventSink?(["eventName": "streamsDidBeginRunning","sipID":nil])
             } else if (message.contains("Another") ||
                        message.contains("declined") ||
                        message.contains("Busy")) {
-                if (!(call.remoteAddressAsString.caseInsensitiveCompare(self.mCurrentAddress) == .orderedSame)) {
+                if (!(((call.remoteAddress?.asString()) ?? "").caseInsensitiveCompare(self.mCurrentAddress) == .orderedSame)) {
                     return;
                 }
                 self.mCurrentAddress = "";
                 TdSipPlugin.eventSink?(["eventName": "callBusy","sipID":nil])
             } else if (state == Call.State.Released) {
-                if (!(call.remoteAddressAsString.caseInsensitiveCompare(self.mCurrentAddress) == .orderedSame)) {
+                if (!(((call.remoteAddress?.asString()) ?? "").caseInsensitiveCompare(self.mCurrentAddress) == .orderedSame)) {
                     return;
                 }
                 self.mCurrentAddress = "";
                 TdSipPlugin.eventSink?(["eventName": "didCallEnd","sipID":nil])
             }
-
+            
         })
-
-
+        
+        
         mCore.addDelegate(delegate: mCallStateDelegate)
         mCore.addDelegate(delegate: mRegistrationDelegate)
-
+        
     }
-
-
+    
+    
     func makeCall(calleeAccount:String){
         mCore.invite(url: calleeAccount)
-
+        
     }
-
+    
     func logout(){
         do{
             try mCore.terminateAllCalls()
@@ -126,8 +121,8 @@ class LinphoneManager: NSObject {
             mCore.clearAllAuthInfo()
         }catch{}
     }
-
-
+    
+    
     func register(sipID:String,
                   sipPassword:String,
                   sipDomain:String,
@@ -139,7 +134,7 @@ class LinphoneManager: NSObject {
                   turnUser:String,
                   turnPassword:String,
                   proxy:String) {
-
+        
         do {
             if(mCore.accountList.count > 0 && mCore.authInfoList[0].username == sipID){
                 mCore.refreshRegisters();
@@ -166,7 +161,7 @@ class LinphoneManager: NSObject {
                 mCore.defaultAccount = account
             }
         } catch { NSLog(error.localizedDescription) }
-
+        
     }
     
     func acceptSip(){
@@ -198,15 +193,27 @@ class LinphoneManager: NSObject {
     }
     
     public func routeAudioToEarpiece(){
+        if (mCore == nil || mCore.currentCall == nil) {
+            return;
+        }
         AudioRouteUtils.routeAudioToEarpiece(call:mCore.currentCall)
     }
     public func routeAudioToSpeaker(){
+        if (mCore == nil || mCore.currentCall == nil) {
+            return;
+        }
         AudioRouteUtils.routeAudioToSpeaker(call:mCore.currentCall)
     }
     public func routeAudioToBluetooth(){
+        if (mCore == nil || mCore.currentCall == nil) {
+            return;
+        }
         AudioRouteUtils.routeAudioToBluetooth(call:mCore.currentCall)
     }
     public func routeAudioToHeadset(){
+        if (mCore == nil || mCore.currentCall == nil) {
+            return;
+        }
         AudioRouteUtils.routeAudioToHeadset(call:mCore.currentCall)
     }
     
@@ -215,10 +222,10 @@ class LinphoneManager: NSObject {
         return lastLinphoneRegistrationState;
     }
     
-    public func getLinphoneCallState() -> Call.State? {
-        return lastLinphoneCallState;
-    }
     public func setVideoView(view : UIView){
+        if (mCore == nil) {
+            return;
+        }
         mCore.nativeVideoWindow = view
         mCore.videoDisplayEnabled  = true
     }
