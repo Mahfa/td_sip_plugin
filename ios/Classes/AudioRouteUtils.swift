@@ -25,7 +25,7 @@ import linphonesw
 @objc class AudioRouteUtils : NSObject {
     
     public static var core : Core?
-
+    
     static private func applyAudioRouteChange( call: Call?, types: [AudioDeviceType], output: Bool = true) {
         let typesNames = types.map { String(describing: $0) }.joined(separator: "/")
         
@@ -35,13 +35,13 @@ import linphonesw
         }
         let conference = core!.conference
         let capability = output ? AudioDeviceCapabilities.CapabilityPlay : AudioDeviceCapabilities.CapabilityRecord
-
+        
         var found = false
         
         core!.audioDevices.forEach { (audioDevice) in
             print("[Audio Route Helper] registered coe audio devices are : [\(audioDevice.deviceName)] [\(audioDevice.type)] [\(audioDevice.capabilities)] ")
         }
-
+        
         core!.audioDevices.forEach { (audioDevice) in
             if (!found && types.contains(audioDevice.type) && audioDevice.hasCapability(capability: capability)) {
                 if (conference != nil && conference?.isIn == true) {
@@ -102,19 +102,31 @@ import linphonesw
     }
     
     static func routeAudioToEarpiece(call: Call? = nil) {
+        if(core==nil || call==nil){
+            return;
+        }
         routeAudioTo(call: call, types: [AudioDeviceType.Microphone]) // on iOS Earpiece = Microphone
     }
     
     static func routeAudioToSpeaker(call: Call? = nil) {
+        if(core==nil || call==nil){
+            return;
+        }
         routeAudioTo(call: call, types: [AudioDeviceType.Speaker])
     }
     
     
     static func routeAudioToBluetooth(call: Call? = nil) {
+        if(core==nil || call==nil){
+            return;
+        }
         routeAudioTo(call: call, types: [AudioDeviceType.Bluetooth])
     }
     
     static func routeAudioToHeadset(call: Call? = nil) {
+        if(core==nil || call==nil){
+            return;
+        }
         routeAudioTo(call: call, types: [AudioDeviceType.Headphones, AudioDeviceType.Headset])
     }
     
@@ -176,7 +188,7 @@ import linphonesw
         return false
     }
     
-
+    
     
     static func isReceiverEnabled() -> Bool {
         if let outputDevice = core!.outputAudioDevice {
