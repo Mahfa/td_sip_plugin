@@ -14,7 +14,7 @@ class LinphoneManager: NSObject {
     
     static let shared = LinphoneManager()
     
-    var mCore: Core!
+    public static var mCore: Core!
     
     var mRegistrationDelegate : CoreDelegate!
     
@@ -34,9 +34,9 @@ class LinphoneManager: NSObject {
     public func initialize(){
         LoggingService.Instance.logLevel = LogLevel.Debug
         
-        try? mCore = Factory.Instance.createCore(configPath: "", factoryConfigPath: "", systemContext: nil)
-        AudioRouteUtils.core = mCore
-        try? mCore.start()
+        try? LinphoneManager.mCore = Factory.Instance.createCore(configPath: "", factoryConfigPath: "", systemContext: nil)
+        AudioRouteUtils.core = LinphoneManager.mCore
+        try? LinphoneManager.mCore.start()
         
         mRegistrationDelegate = CoreDelegateStub(onAccountRegistrationStateChanged: { (core: Core, account: Account, state: RegistrationState, message: String) in
             
@@ -75,7 +75,7 @@ class LinphoneManager: NSObject {
                 if (!self.mCurrentAddress.isEmpty && !(String(cString:call.remoteAddress!.asString()).caseInsensitiveCompare(self.mCurrentAddress) == .orderedSame)) {
                     call.errorInfo?.set(proto: "SIP", reason:Reason.Forbidden, code: 403, status: "Another call is in progress", warning: nil)
                     do{
-                        try self.mCore.terminateAllCalls()
+                        try LinphoneManager.mCore.terminateAllCalls()
                     }catch{}
                     return;
                 }
@@ -103,23 +103,22 @@ class LinphoneManager: NSObject {
         })
         
         
-        mCore.addDelegate(delegate: mCallStateDelegate)
-        mCore.addDelegate(delegate: mRegistrationDelegate)
+        LinphoneManager.mCore.addDelegate(delegate: mCallStateDelegate)
+        LinphoneManager.mCore.addDelegate(delegate: mRegistrationDelegate)
         
     }
     
     
     func makeCall(calleeAccount:String){
-        mCore.invite(url: calleeAccount)
+        if(LinphoneManager.mCore != nil){
+            LinphoneManager.mCore?.invite(url: calleeAccount)
+        }
         
     }
     
     func logout(){
-        do{
-            try mCore.terminateAllCalls()
-            mCore.clearProxyConfig()
-            mCore.clearAllAuthInfo()
-        }catch{}
+        unregister()
+        delete()
     }
     
     
@@ -136,18 +135,18 @@ class LinphoneManager: NSObject {
                   proxy:String) {
         
         do {
-            if(mCore.accountList.count > 0 && mCore.authInfoList[0].username == sipID){
-                mCore.refreshRegisters();
-                mCore.iterate();
+            if(LinphoneManager.mCore.accountList.count > 0 && LinphoneManager.mCore.authInfoList[0].username == sipID){
+                LinphoneManager.mCore.refreshRegisters();
+                LinphoneManager.mCore.iterate();
             }else{
-                for account in mCore.accountList{
-                    mCore.removeAccount(account: account);
+                for account in LinphoneManager.mCore.accountList{
+                    LinphoneManager.mCore.removeAccount(account: account);
                 }
-                for info in mCore.authInfoList{
-                    mCore.removeAuthInfo(info: info);
+                for info in LinphoneManager.mCore.authInfoList{
+                    LinphoneManager.mCore.removeAuthInfo(info: info);
                 }
                 let authInfo = try Factory.Instance.createAuthInfo(username: sipID, userid: "", passwd: sipPassword, ha1: "", realm: "", domain: sipDomain)
-                let accountParams = try mCore.createAccountParams()
+                let accountParams = try LinphoneManager.mCore.createAccountParams()
                 let identity = try Factory.Instance.createAddress(addr: String("sip:" + sipID + "@" + sipDomain))
                 try! accountParams.setIdentityaddress(newValue: identity)
                 let address = try Factory.Instance.createAddress(addr: String("sip:" + proxy))
@@ -155,66 +154,66 @@ class LinphoneManager: NSObject {
                 try accountParams.setServeraddress(newValue: address)
                 accountParams.registerEnabled = true
                 accountParams.expires = 120
-                let account = try mCore.createAccount(params: accountParams)
-                mCore.addAuthInfo(info: authInfo)
-                try mCore.addAccount(account: account)
-                mCore.defaultAccount = account
+                let account = try LinphoneManager.mCore.createAccount(params: accountParams)
+                LinphoneManager.mCore.addAuthInfo(info: authInfo)
+                try LinphoneManager.mCore.addAccount(account: account)
+                LinphoneManager.mCore.defaultAccount = account
             }
         } catch { NSLog(error.localizedDescription) }
         
     }
     
     func acceptSip(){
-        if (mCore == nil) {
+        if (LinphoneManager.mCore == nil) {
             return;
         }
         do{
-            let currentCall = mCore.currentCall;
+            let currentCall = LinphoneManager.mCore.currentCall;
             if (currentCall != nil) {
-                let params = try mCore.createCallParams(call: currentCall)
+                let params = try LinphoneManager.mCore.createCallParams(call: currentCall)
                 try currentCall?.acceptWithParams(params: params)
             }
         }catch{}
     }
     
     func hangup(){
-        if (mCore == nil) {
+        if (LinphoneManager.mCore == nil) {
             return;
         }
         do{
-            try mCore.terminateAllCalls()
+            try LinphoneManager.mCore.terminateAllCalls()
         }catch{}
     }
     func switchMic(open:Bool){
-        if (mCore == nil) {
+        if (LinphoneManager.mCore == nil) {
             return;
         }
-        mCore.micEnabled = open
+        LinphoneManager.mCore.micEnabled = open
     }
     
     public func routeAudioToEarpiece(){
-        if (mCore == nil || mCore.currentCall == nil) {
+        if (LinphoneManager.mCore == nil || LinphoneManager.mCore.currentCall == nil) {
             return;
         }
-        AudioRouteUtils.routeAudioToEarpiece(call:mCore.currentCall)
+        AudioRouteUtils.routeAudioToEarpiece(call:LinphoneManager.mCore.currentCall)
     }
     public func routeAudioToSpeaker(){
-        if (mCore == nil || mCore.currentCall == nil) {
+        if (LinphoneManager.mCore == nil || LinphoneManager.mCore.currentCall == nil) {
             return;
         }
-        AudioRouteUtils.routeAudioToSpeaker(call:mCore.currentCall)
+        AudioRouteUtils.routeAudioToSpeaker(call:LinphoneManager.mCore.currentCall)
     }
     public func routeAudioToBluetooth(){
-        if (mCore == nil || mCore.currentCall == nil) {
+        if (LinphoneManager.mCore == nil || LinphoneManager.mCore.currentCall == nil) {
             return;
         }
-        AudioRouteUtils.routeAudioToBluetooth(call:mCore.currentCall)
+        AudioRouteUtils.routeAudioToBluetooth(call:LinphoneManager.mCore.currentCall)
     }
     public func routeAudioToHeadset(){
-        if (mCore == nil || mCore.currentCall == nil) {
+        if (LinphoneManager.mCore == nil || LinphoneManager.mCore.currentCall == nil) {
             return;
         }
-        AudioRouteUtils.routeAudioToHeadset(call:mCore.currentCall)
+        AudioRouteUtils.routeAudioToHeadset(call:LinphoneManager.mCore.currentCall)
     }
     
     
@@ -223,11 +222,11 @@ class LinphoneManager: NSObject {
     }
     
     public func setVideoView(view : UIView){
-        if (mCore == nil) {
+        if (LinphoneManager.mCore == nil) {
             return;
         }
-        mCore.nativeVideoWindow = view
-        mCore.videoDisplayEnabled  = true
+        LinphoneManager.mCore.nativeVideoWindow = view
+        LinphoneManager.mCore.videoDisplayEnabled  = true
     }
     
     
@@ -235,7 +234,7 @@ class LinphoneManager: NSObject {
     func unregister()
     {
         // Here we will disable the registration of our Account
-        if let account = mCore.defaultAccount {
+        if let account = LinphoneManager.mCore.defaultAccount {
             
             let params = account.params
             // Returned params object is const, so to make changes we first need to clone it
@@ -250,14 +249,14 @@ class LinphoneManager: NSObject {
     }
     func delete() {
         // To completely remove an Account
-        if let account = mCore.defaultAccount {
-            mCore.removeAccount(account: account)
+        if let account = LinphoneManager.mCore.defaultAccount {
+            LinphoneManager.mCore.removeAccount(account: account)
             
             // To remove all accounts use
-            mCore.clearAccounts()
+            LinphoneManager.mCore.clearAccounts()
             
             // Same for auth info
-            mCore.clearAllAuthInfo()
+            LinphoneManager.mCore.clearAllAuthInfo()
         }
     }
     
