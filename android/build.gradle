@@ -48,7 +48,6 @@ android {
 
 dependencies {
     debugImplementation "org.linphone:linphone-sdk-android-debug:5.1+"
-    profileImplementation "org.linphone:linphone-sdk-android:5.1+"
     releaseImplementation "org.linphone:linphone-sdk-android:5.1+"
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
